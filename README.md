@@ -20,7 +20,7 @@ Open **Command Prompt / Terminal** in your project folder:
 ```bash
 cd path/to/cross-domain-image-colorization
 git init
-git remote add origin https://github.com/yourusername/cross-domain-image-colorization.git
+git remote add origin [https://github.com/yourusername/cross-domain-image-colorization.git]
 ```
 
 
