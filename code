@@ -1,0 +1,52 @@
+img_path = "prflkin.jpg" 
+img = Image.open(img_path).convert("L")  
+
+transform = transforms.Compose([
+    transforms.Resize((128, 128)),  
+    transforms.ToTensor()
+])
+img.show(img_path)
+gray_img = transform(img).unsqueeze(0) 
+
+  class SimpleColorizationNet(nn.Module):
+    def __init__(self):
+        super(SimpleColorizationNet, self).__init__()
+        self.stage1 = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1), nn.ReLU())
+        self.stage2 = nn.Sequential(nn.Conv2d(32, 64, 3, padding=1), nn.ReLU())
+        self.stage3 = nn.Sequential(nn.Conv2d(64, 32, 3, padding=1), nn.ReLU())
+        self.final = nn.Conv2d(32, 3, 3, padding=1)
+    def forward(self, x):
+        out1 = self.stage1(x)
+        out2 = self.stage2(out1)
+        out3 = self.stage3(out2)
+        out_final = self.final(out3)
+        return out1, out2, out3, out_final
+
+model = SimpleColorizationNet()
+
+
+  with torch.no_grad():
+    stage1, stage2, stage3, output = model(gray_img)
+
+def tensor_to_img(tensor):
+    tensor = tensor.squeeze(0).cpu()
+    tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min())
+    return tensor.numpy()
+
+stages = [stage1, stage2, stage3, output]
+titles = ["Stage 1: Low-level features", "Stage 2: Mid-level features", "Stage 3: High-level features", "Final Colorized Image"]
+
+plt.figure(figsize=(12, 4))
+for i, s in enumerate(stages):
+    img_data = tensor_to_img(s)
+    if img_data.shape[0] == 3:
+        img_data = np.transpose(img_data, (1, 2, 0))
+    else:
+        img_data = img_data[0]
+    plt.subplot(1, 4, i + 1)
+    plt.imshow(img_data, cmap='viridis' if i < 3 else None)
+    plt.title(titles[i])
+    plt.axis('off')
+plt.show()SS
+  
+  
